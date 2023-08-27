@@ -229,7 +229,135 @@
 </main>
 
 
-<script src="assets/js/jquery-3.7.0.min.js"></script>
+<script src="../assets/js/jquery-3.7.0.min.js"></script>
+<script src="../assets/js/bootstrap.min.js"></script>
+<script>
+    let baseUrl="http://localhost:8081/posApp/";
+    var genarateOrderId = 0;
 
+
+    $("#txtOrderID").val('0-00' + (genarateOrderId += 1));
+
+    function loadCustomerIds() {
+        $("#selectCusID").empty();
+        $("#selectCusID").append($("<option></option>").attr("value", 0).text("Select ID"));
+
+        var countCustomerId = 1;
+
+        $.ajax({
+            url: baseUrl+ "Customer?option=GetAll",
+            method: "GET",
+            success: function (resp) {
+                for (let ids of resp) {
+                    $("#selectCusID").append($("<option></option>").attr("value", countCustomerId).text(ids.id));
+                    countCustomerId++;
+                    console.log(countCustomerId);
+                }
+
+                // Bind the event after options are loaded
+                $("#selectCusID").click(function () {
+                    loardCustomer();
+                });
+            },
+            error: function (ob, statusText, error) {
+            }
+        });
+    }
+    function loardCustomer() {
+        $.ajax({
+            url:baseUrl+ "Customer?option=search&cusID=" + $("#selectCusID option:selected").text(),
+            method: "GET",
+            success: function (response) {
+                $("#orderCustomerID").val(response.id);
+                $("#orderCustomerName").val(response.name);
+                $("#orderCustomerSalary").val(response.address);
+                $("#orderCustomerAddress").val(response.salary);
+            },
+            error: function (ob, statusText, error) {
+            }
+        });
+    }
+
+    // Call the function to start loading customer IDs
+    loadCustomerIds();
+
+    function loadItemIds() {
+        $("#selectItemCode").empty();
+        $("#selectItemCode").append($("<option></option>").attr("value", 0).text("Select ID"));
+
+        var countItemId = 1;
+
+        $.ajax({
+            url: baseUrl+"Item?option=getAll",
+            method: "GET",
+            success: function (resp) {
+                for (let code of resp) {
+                    $("#selectItemCode").append($("<option></option>").attr("value", countItemId).text(code.code));
+                    countItemId++;
+                    console.log(countItemId);
+                }
+                // Bind the event after options are loaded
+                $("#selectItemCode").click(function () {
+                    loadItems();
+
+                });
+            },
+            error: function (ob, statusText, error) {
+            }
+        });
+
+    }
+
+    function loadItems() {
+        $.ajax({
+            url:baseUrl+ "Item?option=search&ItemCode=" + $("#selectItemCode option:selected").text(),
+            method: "GET",
+            success: function (resp) {
+                $("#txtItemCode").val(resp.code);
+                $("#txtItemDescription").val(resp.description);
+                $("#txtQTYOnHand").val(resp.qty);
+                $("#txtItemPrice").val(resp.unitPrice);
+
+
+                // console.log(resp);
+
+
+            },
+            error: function (ob, statusText, error) {
+            }
+        });
+    }
+
+    loadItemIds();
+
+    $("#btnAddToTable").click(function () {
+        let itemCode = $("#txtItemCode").val();
+        let itemDescription = $("#txtItemDescription").val();
+        let itemPrice = $("#txtItemPrice").val();
+        let itemQty = $("#txtQty").val();
+
+        let cartItemsRow = [];
+
+        let total = itemPrice * itemQty;
+
+        cartItemsRow.push(itemCode, itemDescription, itemPrice, itemQty, total);
+
+        let text = "Successfully Added..!";
+
+        if (confirm(text) == true) {
+            let row = `<tr>
+                <td>${itemCode}</td>
+                <td>${itemDescription}</td>
+                <td>${itemPrice}</td>
+                <td>${itemQty}</td>
+                <td>${total}</td>
+            </tr>`;
+
+            $("#orderTable").append(row);
+        }
+    });
+
+
+</script>
 </body>
 </html>

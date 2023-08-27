@@ -20,26 +20,55 @@ public class ItemServlet extends HttpServlet {
         try {
             Class.forName("com.mysql.jdbc.Driver");
             Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/posdb", "root", "1234");
-            PreparedStatement pstm = connection.prepareStatement("SELECT * FROM Item");
-            ResultSet rst = pstm.executeQuery();
-            JsonArrayBuilder allItems = Json.createArrayBuilder();
+            String option = req.getParameter("option");
+            switch (option){
+                case "getAll":
+                    PreparedStatement pstm = connection.prepareStatement("SELECT * FROM Item");
+                    ResultSet rst = pstm.executeQuery();
+                    JsonArrayBuilder allItems = Json.createArrayBuilder();
 
-            while (rst.next()) {
-                JsonObjectBuilder item = Json.createObjectBuilder();
-                item.add("code", rst.getString("code"));
-                item.add("description", rst.getString("description"));
-                item.add("qtyOnHand", rst.getString("qtyOnHand"));
-                item.add("unitPrice", rst.getDouble("unitPrice"));
-                allItems.add(item.build());
+                    while (rst.next()) {
+                        JsonObjectBuilder item = Json.createObjectBuilder();
+                        item.add("code", rst.getString("code"));
+                        item.add("description", rst.getString("description"));
+                        item.add("qtyOnHand", rst.getString("qtyOnHand"));
+                        item.add("unitPrice", rst.getDouble("unitPrice"));
+                        allItems.add(item.build());
+                    }
+                    resp.addHeader("Content-Type","application/json");
+                    resp.addHeader("Access-Control-Allow-Origin","*");
+
+                    JsonObjectBuilder job = Json.createObjectBuilder();
+                    job.add("state","OK");
+                    job.add("message","Successfully Loaded..!");
+                    job.add("data",allItems.build());
+                    resp.getWriter().print(job.build());
+                    break;
+                case "search":
+                    String code = req.getParameter("code");
+                    PreparedStatement pstm2 = connection.prepareStatement("select * from Item where code=?");
+                    pstm2.setObject(1, code);
+                    ResultSet rst2 = pstm2.executeQuery();
+                    resp.addHeader("Access-Control-Allow-Origin", "*");
+
+                    JsonObjectBuilder objectBuilder1 = Json.createObjectBuilder();
+                    if (rst2.next()) {
+                        String code1 = rst2.getString(1);
+                        String description = rst2.getString(2);
+                        String  unitPrice= rst2.getString(3);
+                        String qtyOnHand = rst2.getString(4);
+
+                        objectBuilder1.add("code", code1);
+                        objectBuilder1.add("description", description);
+                        objectBuilder1.add("unitPrice", unitPrice);
+                        objectBuilder1.add("qtyOnHand", qtyOnHand);
+
+                    }
+                    resp.setContentType("application/json");
+                    resp.getWriter().print(objectBuilder1.build());
+
+                    break;
             }
-            resp.addHeader("Content-Type","application/json");
-            resp.addHeader("Access-Control-Allow-Origin","*");
-
-            JsonObjectBuilder job = Json.createObjectBuilder();
-            job.add("state","OK");
-            job.add("message","Successfully Loaded..!");
-            job.add("data",allItems.build());
-            resp.getWriter().print(job.build());
 
         }catch (ClassNotFoundException | SQLException e){
             JsonObjectBuilder rjo = Json.createObjectBuilder();

@@ -20,26 +20,56 @@ public class CustomerServlet extends HttpServlet {
         try {
             Class.forName("com.mysql.jdbc.Driver");
             Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/posdb", "root", "1234");
-            PreparedStatement pstm = connection.prepareStatement("SELECT * FROM Customer");
-            ResultSet rst = pstm.executeQuery();
-            JsonArrayBuilder allCustomers = Json.createArrayBuilder();
+            String option = req.getParameter("option");
 
-            while (rst.next()) {
-                JsonObjectBuilder customer = Json.createObjectBuilder();
-                customer.add("id", rst.getString("id"));
-                customer.add("name", rst.getString("name"));
-                customer.add("address", rst.getString("address"));
-                customer.add("salary", rst.getDouble("salary"));
-                allCustomers.add(customer.build());
+            switch (option) {
+                case "GetAll":
+                    PreparedStatement pstm = connection.prepareStatement("SELECT * FROM Customer");
+                    ResultSet rst = pstm.executeQuery();
+                    JsonArrayBuilder allCustomers = Json.createArrayBuilder();
+
+                    while (rst.next()) {
+                        JsonObjectBuilder customer = Json.createObjectBuilder();
+                        customer.add("id", rst.getString("id"));
+                        customer.add("name", rst.getString("name"));
+                        customer.add("address", rst.getString("address"));
+                        customer.add("salary", rst.getDouble("salary"));
+                        allCustomers.add(customer.build());
+                    }
+                    resp.addHeader("Content-Type", "application/json");
+                    resp.addHeader("Access-Control-Allow-Origin", "*");
+
+                    JsonObjectBuilder job = Json.createObjectBuilder();
+                    job.add("state", "OK");
+                    job.add("message", "Successfully Loaded..!");
+                    job.add("data", allCustomers.build());
+                    resp.getWriter().print(job.build());
+
+                    break;
+                case "search":
+                    PreparedStatement pstm3 = connection.prepareStatement("select * from Customer where id=?");
+                    pstm3.setObject(1, req.getParameter("id"));
+                    ResultSet rst3 = pstm3.executeQuery();
+                    resp.addHeader("Access-Control-Allow-Origin", "*");
+
+                    JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+                    if (rst3.next()) {
+                        String id = rst3.getString(1);
+                        String name = rst3.getString(2);
+                        String salary = rst3.getString(3);
+                        String address = rst3.getString(4);
+
+                        objectBuilder.add("id", id);
+                        objectBuilder.add("name", name);
+                        objectBuilder.add("salary", salary);
+                        objectBuilder.add("address", address);
+
+                    }
+                    resp.setContentType("application/json");
+                    resp.getWriter().print(objectBuilder.build());
+                    break;
+
             }
-            resp.addHeader("Content-Type","application/json");
-            resp.addHeader("Access-Control-Allow-Origin","*");
-
-            JsonObjectBuilder job = Json.createObjectBuilder();
-            job.add("state","OK");
-            job.add("message","Successfully Loaded..!");
-            job.add("data",allCustomers.build());
-            resp.getWriter().print(job.build());
 
         }catch (ClassNotFoundException | SQLException e){
             JsonObjectBuilder rjo = Json.createObjectBuilder();
@@ -49,6 +79,7 @@ public class CustomerServlet extends HttpServlet {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             resp.getWriter().print(rjo.build());
         }
+
     }
 
 //    query string

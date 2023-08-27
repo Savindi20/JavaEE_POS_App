@@ -173,7 +173,7 @@
     function getAllItems() {
         $("#tblItem").empty();
         $.ajax({
-            url: baseUrl+"Item",
+            url: baseUrl+"Item?option=getAll",
             success: function (res) {
                 for (let c of res.data) {
                     let code = c.code;
