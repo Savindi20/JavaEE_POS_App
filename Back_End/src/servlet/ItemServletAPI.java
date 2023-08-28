@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.sql.*;
 
 @WebServlet(urlPatterns = "/Item")
-public class ItemServlet extends HttpServlet {
+public class ItemServletAPI extends HttpServlet {
 
 //    query string
 //    form Data (x-www-form-urlencoded)
