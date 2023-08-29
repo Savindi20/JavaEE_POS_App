@@ -16,7 +16,6 @@ public class PurchaseOrderServletAPI extends HttpServlet{
         JsonReader reader = Json.createReader(req.getReader());
         JsonObject jsonObject = reader.readObject();
 
-        resp.addHeader("Access-Control-Allow-Origin", "*");
 
         String orderId = jsonObject.getString("orderId");
         String orderDate = jsonObject.getString("orderDate");
@@ -83,11 +82,4 @@ public class PurchaseOrderServletAPI extends HttpServlet{
 
     }
 
-
-    @Override
-    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.addHeader("Access-Control-Allow-Origin", "*");
-        resp.addHeader("Access-Control-Allow-Headers", "Content-Type");
-        resp.addHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE");
-    }
 }
